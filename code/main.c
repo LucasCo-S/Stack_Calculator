@@ -62,12 +62,18 @@ int main()
         {
         case GET:
             response = getFormaPosFixa(data->inFixa);
-            printf("Posfixa: %s\n", response);
+            if (response != NULL)
+            {
+                printf("A forma posfixa de %s e: %s", data->inFixa, response);
+            }
             break;
 
         case CALCULATE:
             value = getValorInFixa(data->inFixa);
-            printf("Resultado: %.2f\n", value);
+            if (value != -1)
+            {
+                printf("O resultado da expressao %s e %.2f", data->inFixa, value);
+            }
             break;
 
         default:
@@ -95,12 +101,19 @@ int main()
         {
         case GET:
             response = getFormaInFixa(data->posFixa);
-            printf("Infixa: %s\n", response);
+            if (response != NULL)
+            {
+                printf("A expressao %s na forma infixa e: %s", data->posFixa, response);
+            }
             break;
 
         case CALCULATE:
             value = getValorPosFixa(data->posFixa);
-            printf("Resultado: %.2f\n", value);
+            if (value != -1)
+            {
+                printf("O resultado da expressao %s e %.2f", data->posFixa, value);
+            }
+
             break;
 
         default:
