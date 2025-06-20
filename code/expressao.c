@@ -7,7 +7,7 @@
 
 #define M_PI 3.14159265358979323846
 
-const char *operators[] = {"+", "-", "*", "/", "^", "sen", "cos", "log", NULL};
+const char *operators[] = {"+", "-", "*", "/", "^", "sen", "cos", "log", "tg", "raiz", NULL};
 
 typedef enum
 {
@@ -19,7 +19,9 @@ typedef enum
     OP_POW,
     OP_LOG,
     OP_SEN,
-    OP_COS
+    OP_COS,
+    OP_TG,
+    OP_RAIZ
 } OperatorType;
 
 typedef struct Item
@@ -44,7 +46,9 @@ int isOperatorStr(char *str)
         strcmp(str, "log") == 0 ||
         strcmp(str, "sen") == 0 ||
         strcmp(str, "cos") == 0 ||
-        strcmp(str, "^") == 0);
+        strcmp(str, "^") == 0 ||
+        strcmp(str, "tg") == 0 ||
+        strcmp(str, "raiz") == 0);
 }
 
 int containsOperator(const char *expr)
@@ -105,7 +109,7 @@ int validatePostfixExpression(const char *expr)
         if (isOperatorStr(token))
         {
 
-            if (strcmp(token, "sen") == 0 || strcmp(token, "cos") == 0 || strcmp(token, "log") == 0)
+            if (strcmp(token, "sen") == 0 || strcmp(token, "cos") == 0 || strcmp(token, "log") == 0 || strcmp(token, "tg") == 0 || strcmp(token, "raiz") == 0)
             {
                 if (stackSize < 1)
                     return -1;
@@ -114,19 +118,18 @@ int validatePostfixExpression(const char *expr)
             {
                 if (stackSize < 2)
                     return -1;
-
                 stackSize--;
             }
         }
         else
         {
             stackSize++;
+
+            token = strtok(NULL, " ");
         }
 
-        token = strtok(NULL, " ");
+        return (stackSize == 1) ? 0 : -1;
     }
-
-    return (stackSize == 1) ? 0 : -1;
 }
 
 void stackItems(Stack *S, Item *I)
@@ -227,6 +230,10 @@ OperatorType getOperatorType(char *token)
         return OP_SEN;
     if (strcmp(token, "cos") == 0)
         return OP_COS;
+    if (strcmp(token, "tg") == 0)
+        return OP_TG;
+    if (strcmp(token, "raiz") == 0)
+        return OP_RAIZ;
 
     return OP_INVALID;
 }
@@ -260,7 +267,7 @@ char *getFormaInFixa(char *Str)
 
         if (isOperatorStr(token))
         {
-            if (strcmp(token, "log") == 0 || strcmp(token, "sen") == 0 || strcmp(token, "cos") == 0)
+            if (strcmp(token, "log") == 0 || strcmp(token, "sen") == 0 || strcmp(token, "cos") == 0 || strcmp(token, "tg") == 0 || strcmp(token, "raiz") == 0)
             {
 
                 Item *arg = unstack(S);
@@ -321,20 +328,20 @@ char *getFormaInFixa(char *Str)
 
 int getPrecedence(char *op)
 {
-    if (strcmp(op, "log") == 0 || strcmp(op, "sen") == 0 || strcmp(op, "cos") == 0)
-        return 4;
-
-    if (strcmp(op, "^") == 0)
-        return 3;
-
-    if (strcmp(op, "*") == 0 || strcmp(op, "/") == 0)
-        return 2;
-
     if (strcmp(op, "+") == 0 || strcmp(op, "-") == 0)
         return 1;
+    if (strcmp(op, "*") == 0 || strcmp(op, "/") == 0)
+        return 2;
+    if (strcmp(op, "^") == 0)
+        return 3;
+    if (strcmp(op, "log") == 0 || strcmp(op, "sen") == 0 || strcmp(op, "cos") == 0 || strcmp(op, "tg") == 0 || strcmp(op, "raiz") == 0)
+        return 4;
 
     return 0;
 }
+
+#include <ctype.h>
+#include <string.h>
 
 void separateParentheses(char *destiny, char *origin)
 {
@@ -361,14 +368,33 @@ void separateParentheses(char *destiny, char *origin)
 
         else if ((strncmp(&origin[i], "log", 3) == 0 ||
                   strncmp(&origin[i], "sen", 3) == 0 ||
-                  strncmp(&origin[i], "cos", 3) == 0) &&
-                 isalnum(origin[i + 3]))
-
+                  strncmp(&origin[i], "cos", 3) == 0 ||
+                  strncmp(&origin[i], "tg", 2) == 0 ||
+                  strncmp(&origin[i], "raiz", 4) == 0))
         {
-            destiny[j++] = origin[i++];
-            destiny[j++] = origin[i++];
-            destiny[j++] = origin[i++];
-            destiny[j++] = ' ';
+            if (strncmp(&origin[i], "raiz", 4) == 0)
+            {
+                destiny[j++] = 'r';
+                destiny[j++] = 'a';
+                destiny[j++] = 'i';
+                destiny[j++] = 'z';
+                destiny[j++] = ' ';
+                i += 4;
+            }
+            else if (strncmp(&origin[i], "tg", 2) == 0)
+            {
+                destiny[j++] = 't';
+                destiny[j++] = 'g';
+                destiny[j++] = ' ';
+                i += 2;
+            }
+            else
+            {
+                destiny[j++] = origin[i++];
+                destiny[j++] = origin[i++];
+                destiny[j++] = origin[i++];
+                destiny[j++] = ' ';
+            }
         }
         else
         {
@@ -410,7 +436,8 @@ char *getFormaPosFixa(char *Str)
         }
         else if (isOperatorStr(token))
         {
-            if (strcmp(token, "sen") == 0 || strcmp(token, "cos") == 0 || strcmp(token, "log") == 0)
+            if (strcmp(token, "sen") == 0 || strcmp(token, "cos") == 0 ||
+                strcmp(token, "log") == 0 || strcmp(token, "tg") == 0 || strcmp(token, "raiz") == 0)
             {
                 stackItems(S, createItem(token));
             }
@@ -447,7 +474,10 @@ char *getFormaPosFixa(char *Str)
 
             if (S->size > 0 && (strcmp(S->top->value, "sen") == 0 ||
                                 strcmp(S->top->value, "cos") == 0 ||
-                                strcmp(S->top->value, "log") == 0))
+                                strcmp(S->top->value, "log") == 0 ||
+                                strcmp(S->top->value, "tg") == 0 ||
+                                strcmp(S->top->value, "raiz") == 0))
+
             {
                 Item *func = unstack(S);
                 strcat(output, func->value);
@@ -507,7 +537,9 @@ float getValorPosFixa(char *StrPosFixa)
     {
         if (isOperatorStr(token))
         {
-            if (strcmp(token, "log") == 0 || strcmp(token, "cos") == 0 || strcmp(token, "sen") == 0)
+            if (strcmp(token, "log") == 0 || strcmp(token, "cos") == 0 || strcmp(token, "sen") == 0 ||
+                strcmp(token, "tg") == 0 || strcmp(token, "raiz") == 0)
+
             {
                 Item *arg = unstack(S);
 
@@ -525,23 +557,34 @@ float getValorPosFixa(char *StrPosFixa)
                 {
                 case OP_SEN:
                     value = sinf(rad);
-                    sprintf(result, "%.3f", value);
                     break;
 
                 case OP_COS:
                     value = cosf(rad);
-                    sprintf(result, "%.3f", value);
+                    break;
+
+                case OP_TG:
+                    value = tanf(rad);
                     break;
 
                 case OP_LOG:
                     value = log10f(number);
-                    sprintf(result, "%.3f", value);
+                    break;
+
+                case OP_RAIZ:
+                    if (number < 0)
+                    {
+                        printf("Raiz de numero negativo invalida.\n");
+                        return -1;
+                    }
+                    value = sqrtf(number);
                     break;
 
                 default:
-                    printf("Operador inválido");
+                    printf("Operador inválido\n");
                     return -1;
                 }
+                sprintf(result, "%.3f", value);
 
                 Item *I = createItem(result);
 
