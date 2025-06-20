@@ -37,8 +37,6 @@ int main()
 
     char *response;
 
-    float value;
-
     switch (mainOption)
     {
     case INFIX:
@@ -69,10 +67,10 @@ int main()
             break;
 
         case CALCULATE:
-            value = getValorInFixa(data->inFixa);
-            if (value != -1)
+            data->Valor = getValorInFixa(data->inFixa);
+            if (data->Valor != -1)
             {
-                printf("O resultado da expressao %s e %.2f", data->inFixa, value);
+                printf("O resultado da expressao %s e %.2f", data->inFixa, data->Valor);
             }
             break;
 
@@ -108,10 +106,10 @@ int main()
             break;
 
         case CALCULATE:
-            value = getValorPosFixa(data->posFixa);
-            if (value != -1)
+            data->Valor = getValorPosFixa(data->posFixa);
+            if (data->Valor != -1)
             {
-                printf("O resultado da expressao %s e %.2f", data->posFixa, value);
+                printf("O resultado da expressao %s e %.2f", data->posFixa, data->Valor);
             }
 
             break;
